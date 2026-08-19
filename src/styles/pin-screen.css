@@ -7,6 +7,7 @@
   background: radial-gradient(ellipse at 50% 20%, var(--night-soft), var(--night-deep) 70%);
   overflow: hidden;
   transition: opacity 0.6s var(--ease-soft), filter 0.6s var(--ease-soft);
+  padding: 24px;
 }
 
 .pin-screen--unlocking {
@@ -82,18 +83,24 @@
 .pin-screen__card {
   position: relative;
   z-index: 2;
-  width: min(90vw, 380px);
-  padding: 48px 32px;
-  border-radius: 28px;
+  width: min(92vw, 360px);
+  padding: clamp(28px, 5vw, 40px) clamp(20px, 5vw, 28px);
+  border-radius: 30px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(18px);
   text-align: center;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  transition: box-shadow 0.5s var(--ease-soft), border-color 0.5s var(--ease-soft);
 }
 
 .pin-screen__card--shake {
   animation: pin-shake 0.5s;
+}
+
+.pin-screen__card--success {
+  border-color: rgba(227, 184, 115, 0.6);
+  box-shadow: 0 0 60px rgba(227, 184, 115, 0.35), 0 30px 80px rgba(0, 0, 0, 0.45);
 }
 
 @keyframes pin-shake {
@@ -116,34 +123,33 @@
 }
 
 .pin-screen__eyebrow {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--gold-soft);
   opacity: 0.8;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .pin-screen__title {
   font-family: var(--font-display);
   font-weight: 500;
   font-style: italic;
-  font-size: clamp(1.8rem, 6vw, 2.4rem);
-  margin-bottom: 32px;
+  font-size: clamp(1.6rem, 6vw, 2.2rem);
+  margin-bottom: clamp(20px, 4vw, 28px);
   color: var(--ink);
 }
 
 .pin-screen__dots {
   display: flex;
   justify-content: center;
-  gap: 14px;
-  margin-bottom: 20px;
-  cursor: text;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .pin-screen__dot {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   border: 1.5px solid rgba(240, 217, 171, 0.5);
   transition: all 0.25s var(--ease-soft);
@@ -154,20 +160,29 @@
   border-color: var(--gold);
   box-shadow: 0 0 12px rgba(227, 184, 115, 0.7);
   transform: scale(1.15);
+  animation: pin-pop 0.3s var(--ease-soft);
 }
 
-.pin-screen__hidden-input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  height: 0;
-  width: 0;
+@keyframes pin-pop {
+  0% {
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1.15);
+  }
+}
+
+.pin-screen__feedback-slot {
+  min-height: 20px;
+  margin-bottom: 6px;
 }
 
 .pin-screen__feedback {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--rose);
-  margin-top: 4px;
   animation: pin-fade-in 0.3s var(--ease-soft);
 }
 
@@ -179,5 +194,85 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+.pin-screen__keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(10px, 2.6vw, 14px);
+  margin-top: clamp(18px, 4vw, 24px);
+  transition: opacity 0.3s var(--ease-soft);
+}
+
+.pin-screen__keypad--disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.pin-screen__key {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  min-height: 52px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 4.2vw, 1.35rem);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s var(--ease-soft), background 0.2s var(--ease-soft),
+    border-color 0.2s var(--ease-soft), box-shadow 0.2s var(--ease-soft);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pin-screen__key:active {
+  transform: scale(0.9);
+}
+
+.pin-screen__key--pressed {
+  background: rgba(227, 184, 115, 0.18);
+  border-color: rgba(227, 184, 115, 0.5);
+  box-shadow: 0 0 16px rgba(227, 184, 115, 0.25);
+}
+
+.pin-screen__key--action {
+  color: var(--gold-soft);
+}
+
+.pin-screen__key--action:disabled {
+  opacity: 0.35;
+}
+
+.pin-screen__key--ready {
+  color: var(--night-deep);
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: 0 0 20px rgba(227, 184, 115, 0.5);
+}
+
+/* Hover only for devices that actually have a mouse — keeps touch devices
+   from getting a "stuck" hover state after tapping. */
+@media (hover: hover) and (pointer: fine) {
+  .pin-screen__key:not(:disabled):hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(240, 217, 171, 0.35);
+  }
+
+  .pin-screen__key--ready:not(:disabled):hover {
+    background: var(--gold-soft);
+    border-color: var(--gold-soft);
+  }
+}
+
+@media (max-width: 360px) {
+  .pin-screen__key {
+    min-height: 46px;
+    border-radius: 15px;
   }
 }
