@@ -126,6 +126,44 @@
   overflow: hidden;
 }
 
+/* Warm vintage grade, scoped to the photo composition only. */
+.mograph-scene__grade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0.16;
+  background:
+    radial-gradient(ellipse at 62% 28%, rgba(255, 196, 120, 0.55), transparent 62%),
+    linear-gradient(200deg, rgba(255, 180, 110, 0.22), rgba(35, 18, 10, 0.35));
+}
+
+/* Scene-handoff light flash — stands in for a plain crossfade. */
+.mograph-scene__flash {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: scene-flash 0.9s ease-out both;
+}
+.mograph-scene__flash--amber {
+  background: radial-gradient(circle at 50% 45%, rgba(255, 214, 150, 0.9), transparent 65%);
+}
+.mograph-scene__flash--rose {
+  background: radial-gradient(circle at 50% 45%, rgba(255, 190, 190, 0.85), transparent 65%);
+}
+.mograph-scene__flash--white {
+  background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.85), transparent 65%);
+}
+@keyframes scene-flash {
+  0% { opacity: 0; }
+  18% { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+
 .mograph-scene__world {
   position: absolute;
   inset: 0;
@@ -253,6 +291,204 @@
 }
 .mograph-string[class*="--trio"][class$="-0-2"] .mograph-string__path {
   animation-name: string-draw-full;
+}
+
+/* =========================================================
+   SCRAPBOOK DECORATION — paper, tape, notes, labels, doodles,
+   living inside the same .mograph-scene__world as the photos, so
+   everything rides the same camera. Three depth tiers:
+     --bg   sits behind the photo frames, drifts least
+     --deco sits above the photos (tape/labels/notes), no extra drift
+     --fg   sits above everything, drifts most (foreground read)
+   ========================================================= */
+.mograph-decor-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.mograph-decor-layer--bg {
+  z-index: 0;
+  animation: decor-drift-bg var(--scene-duration, 6s) linear both;
+}
+.mograph-decor-layer--deco {
+  z-index: 2;
+}
+.mograph-decor-layer--fg {
+  z-index: 3;
+  animation: decor-drift-fg var(--scene-duration, 6s) linear both;
+}
+
+@keyframes decor-drift-bg {
+  0% { transform: translate(-0.4%, -0.3%) scale(1.02); }
+  100% { transform: translate(0.4%, 0.3%) scale(1.05); }
+}
+@keyframes decor-drift-fg {
+  0% { transform: translate(-1.6%, -1.1%) scale(1.01); }
+  100% { transform: translate(1.8%, 1.3%) scale(1.06); }
+}
+
+.mograph-decor {
+  position: absolute;
+  top: var(--d-top, 50%);
+  left: var(--d-left, 50%);
+  transform: translate(-50%, -50%) rotate(var(--d-rot, 0deg)) scale(var(--d-scale, 1));
+  opacity: 0;
+  animation: decor-in 0.9s var(--ease-soft) both;
+  animation-delay: var(--d-delay, 0s);
+}
+
+@keyframes decor-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--d-rot, 0deg)) scale(calc(var(--d-scale, 1) * 0.85));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--d-rot, 0deg)) scale(var(--d-scale, 1));
+  }
+}
+
+/* ---- continuous micro-motion, applied to the inner visual ---- */
+.decor-float { animation: decor-float 4.6s ease-in-out infinite; }
+.decor-wiggle { animation: decor-wiggle 3.2s ease-in-out infinite; }
+.decor-bob { animation: decor-bob 3.8s ease-in-out infinite; }
+
+@keyframes decor-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes decor-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(2deg); }
+}
+@keyframes decor-bob {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.03); }
+}
+
+/* ---- element visuals ---- */
+.decor-paper {
+  width: clamp(56px, 8vw, 92px);
+  aspect-ratio: 4 / 5;
+  background: linear-gradient(160deg, #fff, var(--paper));
+  border-radius: 2px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+.decor-newspaper {
+  width: clamp(64px, 9vw, 104px);
+  aspect-ratio: 3 / 2;
+  background: repeating-linear-gradient(var(--paper) 0 3px, #d8cdb8 3px 4px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+.decor-tape {
+  width: clamp(38px, 5vw, 58px);
+  height: 18px;
+  background: rgba(240, 217, 171, 0.55);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  border-left: 1px dashed rgba(255, 255, 255, 0.45);
+  border-right: 1px dashed rgba(255, 255, 255, 0.45);
+}
+.decor-sticky {
+  width: clamp(46px, 6vw, 66px);
+  height: clamp(46px, 6vw, 66px);
+  background: #f3e0a8;
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  position: relative;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+}
+.decor-sticky::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 12px 12px;
+  border-color: transparent transparent rgba(0, 0, 0, 0.12) transparent;
+}
+.decor-sticky span,
+.decor-label span {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.72rem;
+  color: var(--paper-ink);
+  text-align: center;
+  line-height: 1.1;
+}
+.decor-label {
+  padding: 4px 10px;
+  background: rgba(239, 230, 216, 0.9);
+  border: 1px solid rgba(43, 33, 24, 0.25);
+  border-radius: 2px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+}
+.decor-label span {
+  font-family: var(--font-body);
+  font-style: normal;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.6rem;
+}
+.decor-sticker {
+  width: clamp(26px, 3.6vw, 36px);
+  height: clamp(26px, 3.6vw, 36px);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-soft), var(--gold));
+  display: grid;
+  place-items: center;
+  color: var(--night-deep);
+  font-size: 0.8rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+.decor-clip {
+  width: 22px;
+  height: 36px;
+  overflow: visible;
+}
+.decor-doodle {
+  width: clamp(30px, 4.5vw, 46px);
+  height: clamp(30px, 4.5vw, 46px);
+  stroke: var(--gold-soft);
+  fill: none;
+  stroke-width: 2.4;
+  opacity: 0.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+.decor-doodle path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: doodle-draw 1.4s var(--ease-soft) both;
+  animation-delay: var(--d-delay, 0s);
+}
+@keyframes doodle-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Foreground "sweep" — a paper/photo shape crossing the frame to sell a
+   layered reveal transition instead of a plain fade (Scene 8). */
+.decor-sweep {
+  position: absolute;
+  top: 50%;
+  left: -30%;
+  width: clamp(180px, 46vw, 340px);
+  aspect-ratio: 3 / 4;
+  background: linear-gradient(160deg, #fff, var(--paper));
+  border-radius: 4px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  animation: decor-sweep-across var(--scene-duration, 6s) var(--ease-soft) both;
+}
+@keyframes decor-sweep-across {
+  0% { transform: translateY(-50%) translateX(-10%) rotate(-8deg) scale(1); opacity: 0; filter: blur(6px); }
+  10% { opacity: 1; filter: blur(0); }
+  38% { transform: translateY(-50%) translateX(120%) rotate(6deg) scale(1.05); opacity: 1; filter: blur(0); }
+  46% { opacity: 0; filter: blur(8px); }
+  100% { transform: translateY(-50%) translateX(120%) rotate(6deg) scale(1.05); opacity: 0; }
 }
 
 /* =========================================================
@@ -614,6 +850,18 @@
   .mograph-scene__lyrics {
     padding-bottom: calc(clamp(80px, 12vh, 140px) + env(safe-area-inset-bottom, 0px));
   }
+  /* keep decoration readable but subordinate on small screens */
+  .decor-paper,
+  .decor-newspaper {
+    width: clamp(44px, 14vw, 64px) !important;
+  }
+  .decor-sticky,
+  .decor-label {
+    transform: scale(0.85);
+  }
+  .decor-sweep {
+    width: clamp(140px, 60vw, 220px) !important;
+  }
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
@@ -632,11 +880,28 @@
   .mograph-scene__world,
   .mograph-scene__bg,
   .mograph-photo-frame,
-  .mograph-string__path {
+  .mograph-string__path,
+  .mograph-decor-layer,
+  .mograph-decor,
+  .decor-float,
+  .decor-wiggle,
+  .decor-bob,
+  .decor-sweep,
+  .decor-doodle path,
+  .mograph-scene__flash {
     animation: none !important;
   }
   .mograph-string__path {
     stroke-dashoffset: 0;
+  }
+  .mograph-decor {
+    opacity: 1;
+  }
+  .decor-doodle path {
+    stroke-dashoffset: 0;
+  }
+  .decor-sweep {
+    display: none;
   }
 }
 
