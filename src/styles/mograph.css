@@ -15,12 +15,16 @@
 .mograph__stage {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .mograph__intro-glow {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.mograph__intro-glow::before {
+  content: "";
   width: 260px;
   height: 260px;
   border-radius: 50%;
@@ -45,7 +49,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.65) 100%);
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
   z-index: 5;
 }
 
@@ -58,41 +62,114 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ---------- SCENE ---------- */
+/* =========================================================
+   SCENE — background + camera viewport + lyrics, stacked as
+   one full-height flex column so lyrics always sit below the
+   photo composition instead of over it.
+   ========================================================= */
 .mograph-scene {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  animation: scene-fade-in 0.6s var(--ease-soft) both;
 }
 
-.mograph-scene__photos {
+@keyframes scene-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------- BACKGROUND LAYER ---------- */
+.mograph-scene__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: bg-drift var(--scene-duration, 4s) linear both;
+  will-change: transform;
+}
+
+.mograph-scene__bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(11, 10, 20, 0.35) 0%,
+    rgba(11, 10, 20, 0.15) 38%,
+    rgba(11, 10, 20, 0.55) 78%,
+    rgba(11, 10, 20, 0.92) 100%
+  );
+}
+
+@keyframes bg-drift {
+  0% {
+    transform: scale(1.06) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.14) translate(-1.5%, -1%);
+  }
+}
+
+/* ---------- CAMERA VIEWPORT + WORLD ---------- */
+.mograph-scene__viewport {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mograph-scene__world {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
+  transform-origin: center center;
+  animation-duration: var(--scene-duration, 4s);
+  animation-timing-function: var(--ease-soft);
+  animation-fill-mode: both;
+  will-change: transform;
 }
 
-.mograph-photo {
+/* ---------- PHOTO FRAME (frame + photo = one object) ---------- */
+.mograph-photo-frame {
   position: absolute;
   aspect-ratio: 1 / 1;
-  overflow: hidden;
-  border-radius: 6px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
-  animation: photo-in 1.4s var(--ease-soft) both;
+  padding: 0.35rem 0.35rem 1rem;
+  background: var(--paper);
+  border-radius: 4px;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.5), 0 2px 0 rgba(255, 255, 255, 0.04) inset;
+  transform: translate(var(--fx, 0), var(--fy, 0)) rotate(var(--frot, 0deg));
 }
 
-.mograph-photo img {
+.mograph-photo-frame__inner {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 2px;
+  opacity: 0;
+  animation: frame-reveal 1s var(--ease-soft) both;
+  animation-delay: var(--entrance-delay, 0s);
+}
+
+.mograph-photo-frame__inner img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-@keyframes photo-in {
+@keyframes frame-reveal {
   0% {
     opacity: 0;
-    transform: scale(1.25) rotate(2deg);
-    filter: blur(6px);
+    transform: scale(1.22);
+    filter: blur(7px);
   }
   60% {
     opacity: 1;
@@ -100,125 +177,223 @@
   }
   100% {
     opacity: 1;
-    transform: scale(1.06) rotate(0deg);
+    transform: scale(1);
   }
 }
 
-/* --- composition: one --- */
-.mograph-scene--one .mograph-photo--0 {
-  width: min(58vw, 420px);
-  animation-name: photo-in-zoom-slow;
+/* ---------- STRING / CONNECTOR ---------- */
+.mograph-string {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  opacity: 0;
+  animation: string-reveal 1.2s var(--ease-soft) both;
+  animation-delay: 0.35s;
 }
-@keyframes photo-in-zoom-slow {
-  0% {
+
+.mograph-string__path {
+  fill: none;
+  stroke: var(--gold-soft);
+  stroke-width: 0.35;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+@keyframes string-reveal {
+  from {
     opacity: 0;
-    transform: scale(1.4);
-    filter: blur(10px);
   }
-  100% {
+  to {
     opacity: 1;
-    transform: scale(1.1);
-    filter: blur(0);
   }
 }
 
-/* --- composition: two --- */
-.mograph-scene--two .mograph-photo--0 {
-  width: min(36vw, 260px);
-  transform: translate(-58%, -18%) rotate(-4deg);
+/* =========================================================
+   LAYOUT PRESETS — where each frame sits inside the world.
+   Sizes use clamp() so nothing overflows on small screens.
+   ========================================================= */
+
+/* --- duo-diagonal: two frames, opposite corners --- */
+.mograph-scene--duo-diagonal .mograph-photo-frame--0 {
+  width: clamp(150px, 34vw, 320px);
+  --fx: -46%;
+  --fy: -22%;
+  --frot: -5deg;
 }
-.mograph-scene--two .mograph-photo--1 {
-  width: min(36vw, 260px);
-  transform: translate(58%, 18%) rotate(3deg);
-  animation-delay: 0.15s;
+.mograph-scene--duo-diagonal .mograph-photo-frame--1 {
+  width: clamp(150px, 34vw, 320px);
+  --fx: 46%;
+  --fy: 22%;
+  --frot: 4deg;
 }
 
-/* --- composition: three --- */
-.mograph-scene--three .mograph-photo--0 {
-  width: min(30vw, 220px);
-  transform: translate(-70%, -30%) rotate(-6deg);
+/* --- duo-stack: two frames, vertically layered, overlapping --- */
+.mograph-scene--duo-stack .mograph-photo-frame--0 {
+  width: clamp(160px, 38vw, 340px);
+  --fx: -8%;
+  --fy: -32%;
+  --frot: -3deg;
 }
-.mograph-scene--three .mograph-photo--1 {
-  width: min(30vw, 220px);
-  transform: translate(0, 40%) rotate(2deg);
-  animation-delay: 0.12s;
-}
-.mograph-scene--three .mograph-photo--2 {
-  width: min(30vw, 220px);
-  transform: translate(70%, -25%) rotate(5deg);
-  animation-delay: 0.24s;
+.mograph-scene--duo-stack .mograph-photo-frame--1 {
+  width: clamp(160px, 38vw, 340px);
+  --fx: 8%;
+  --fy: 26%;
+  --frot: 5deg;
 }
 
-/* --- composition: four --- */
-.mograph-scene--four .mograph-photo--0 {
-  width: min(24vw, 180px);
-  transform: translate(-75%, -60%) rotate(-5deg);
+/* --- duo-cross: two frames crossing on a diagonal --- */
+.mograph-scene--duo-cross .mograph-photo-frame--0 {
+  width: clamp(150px, 33vw, 300px);
+  --fx: -40%;
+  --fy: 24%;
+  --frot: 6deg;
 }
-.mograph-scene--four .mograph-photo--1 {
-  width: min(24vw, 180px);
-  transform: translate(65%, -55%) rotate(4deg);
-  animation-delay: 0.1s;
-}
-.mograph-scene--four .mograph-photo--2 {
-  width: min(24vw, 180px);
-  transform: translate(-65%, 55%) rotate(3deg);
-  animation-delay: 0.2s;
-}
-.mograph-scene--four .mograph-photo--3 {
-  width: min(24vw, 180px);
-  transform: translate(75%, 60%) rotate(-3deg);
-  animation-delay: 0.3s;
+.mograph-scene--duo-cross .mograph-photo-frame--1 {
+  width: clamp(150px, 33vw, 300px);
+  --fx: 40%;
+  --fy: -24%;
+  --frot: -4deg;
 }
 
-/* --- composition: five --- */
-.mograph-scene--five .mograph-photo--0 {
-  width: min(20vw, 150px);
-  transform: translate(0, -70%) rotate(-2deg);
+/* --- trio-cascade: three frames stepping diagonally --- */
+.mograph-scene--trio-cascade .mograph-photo-frame--0 {
+  width: clamp(120px, 26vw, 230px);
+  --fx: -55%;
+  --fy: -34%;
+  --frot: -6deg;
 }
-.mograph-scene--five .mograph-photo--1 {
-  width: min(20vw, 150px);
-  transform: translate(-78%, -20%) rotate(-6deg);
-  animation-delay: 0.1s;
+.mograph-scene--trio-cascade .mograph-photo-frame--1 {
+  width: clamp(120px, 26vw, 230px);
+  --fx: 0%;
+  --fy: 4%;
+  --frot: 2deg;
 }
-.mograph-scene--five .mograph-photo--2 {
-  width: min(20vw, 150px);
-  transform: translate(78%, -20%) rotate(6deg);
-  animation-delay: 0.2s;
-}
-.mograph-scene--five .mograph-photo--3 {
-  width: min(20vw, 150px);
-  transform: translate(-45%, 65%) rotate(-3deg);
-  animation-delay: 0.3s;
-}
-.mograph-scene--five .mograph-photo--4 {
-  width: min(20vw, 150px);
-  transform: translate(45%, 65%) rotate(3deg);
-  animation-delay: 0.4s;
+.mograph-scene--trio-cascade .mograph-photo-frame--2 {
+  width: clamp(120px, 26vw, 230px);
+  --fx: 55%;
+  --fy: 38%;
+  --frot: 5deg;
 }
 
-/* ---------- KINETIC TYPOGRAPHY ---------- */
-.mograph-scene__type {
+/* --- trio-scatter: three frames spread to the corners --- */
+.mograph-scene--trio-scatter .mograph-photo-frame--0 {
+  width: clamp(110px, 24vw, 210px);
+  --fx: -60%;
+  --fy: -18%;
+  --frot: -5deg;
+}
+.mograph-scene--trio-scatter .mograph-photo-frame--1 {
+  width: clamp(110px, 24vw, 210px);
+  --fx: 58%;
+  --fy: -30%;
+  --frot: 4deg;
+}
+.mograph-scene--trio-scatter .mograph-photo-frame--2 {
+  width: clamp(110px, 24vw, 210px);
+  --fx: 6%;
+  --fy: 42%;
+  --frot: -3deg;
+}
+
+/* --- trio-arc: three frames forming a shallow arc --- */
+.mograph-scene--trio-arc .mograph-photo-frame--0 {
+  width: clamp(115px, 25vw, 220px);
+  --fx: -50%;
+  --fy: 30%;
+  --frot: 4deg;
+}
+.mograph-scene--trio-arc .mograph-photo-frame--1 {
+  width: clamp(130px, 27vw, 240px);
+  --fx: 0%;
+  --fy: -38%;
+  --frot: -2deg;
+}
+.mograph-scene--trio-arc .mograph-photo-frame--2 {
+  width: clamp(115px, 25vw, 220px);
+  --fx: 52%;
+  --fy: 28%;
+  --frot: -5deg;
+}
+
+/* =========================================================
+   CAMERA MOVEMENTS — one distinct feel per scene. All target
+   .mograph-scene__world only, so frames/strings/background
+   stay decoupled and every element rides the same camera.
+   ========================================================= */
+@keyframes cam-push-in-slow {
+  0% { transform: scale(1.02) translate(0, 0); }
+  100% { transform: scale(1.16) translate(-1%, -1%); }
+}
+@keyframes cam-pan-right-zoom-out {
+  0% { transform: scale(1.28) translate(-4%, 1%); }
+  100% { transform: scale(1.05) translate(4%, -1%); }
+}
+@keyframes cam-push-in-diagonal {
+  0% { transform: scale(1.05) translate(-3%, 2%) rotate(-0.4deg); }
+  100% { transform: scale(1.3) translate(3%, -2%) rotate(0.4deg); }
+}
+@keyframes cam-diagonal-sweep {
+  0% { transform: scale(1.2) translate(6%, -5%) rotate(0.6deg); }
+  100% { transform: scale(1.28) translate(-6%, 5%) rotate(-0.6deg); }
+}
+@keyframes cam-pull-out-reveal {
+  0% { transform: scale(1.42) translate(0, 1%); }
+  100% { transform: scale(1.08) translate(0, -1%); }
+}
+@keyframes cam-pan-left-zoom {
+  0% { transform: scale(1.1) translate(5%, 0); }
+  100% { transform: scale(1.3) translate(-5%, 0); }
+}
+@keyframes cam-diagonal-reveal {
+  0% { transform: scale(1.32) translate(-5%, 5%) rotate(0.5deg); }
+  100% { transform: scale(1.1) translate(5%, -5%) rotate(-0.5deg); }
+}
+@keyframes cam-zoom-out-layered {
+  0% { transform: scale(1.4) rotate(0.7deg); }
+  100% { transform: scale(1.1) rotate(-0.7deg); }
+}
+@keyframes cam-cinematic-close {
+  0% { transform: scale(1.06) translate(0, 1%); }
+  100% { transform: scale(1.34) translate(0, -1%); }
+}
+
+.mograph-cam--push-in-slow { animation-name: cam-push-in-slow; }
+.mograph-cam--pan-right-zoom-out { animation-name: cam-pan-right-zoom-out; }
+.mograph-cam--push-in-diagonal { animation-name: cam-push-in-diagonal; }
+.mograph-cam--diagonal-sweep { animation-name: cam-diagonal-sweep; }
+.mograph-cam--pull-out-reveal { animation-name: cam-pull-out-reveal; }
+.mograph-cam--pan-left-zoom { animation-name: cam-pan-left-zoom; }
+.mograph-cam--diagonal-reveal { animation-name: cam-diagonal-reveal; }
+.mograph-cam--zoom-out-layered { animation-name: cam-zoom-out-layered; }
+.mograph-cam--cinematic-close { animation-name: cam-cinematic-close; }
+
+/* =========================================================
+   LYRICS — anchored below the composition, never over it.
+   ========================================================= */
+.mograph-scene__lyrics {
   position: relative;
-  z-index: 10;
+  z-index: 2;
+  flex: 0 0 auto;
   text-align: center;
-  padding: 0 8vw;
-  max-width: 900px;
+  padding: 0.75rem clamp(1.25rem, 6vw, 3rem) clamp(1.5rem, 5vh, 2.75rem);
 }
 
 .mograph-type-line {
   font-family: var(--font-display);
   font-weight: 500;
   font-style: italic;
-  font-size: clamp(1.6rem, 6vw, 3.2rem);
-  line-height: 1.25;
+  font-size: clamp(1.15rem, 4.4vw, 2.6rem);
+  line-height: 1.28;
   color: var(--ink);
-  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.7);
 }
 
 .mograph-type-line--placeholder {
   color: var(--gold-soft);
   opacity: 0.6;
-  font-size: 2rem;
+  font-size: 1.6rem;
 }
 
 .mograph-type-word {
@@ -245,18 +420,39 @@
   }
 }
 
-/* ---------- responsive ---------- */
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 @media (max-width: 640px) {
-  .mograph-scene--four .mograph-photo,
-  .mograph-scene--five .mograph-photo {
-    width: min(34vw, 150px) !important;
+  .mograph-scene__viewport {
+    flex-basis: 68%;
   }
-  .mograph-scene--four .mograph-photo--3,
-  .mograph-scene--five .mograph-photo--3,
-  .mograph-scene--five .mograph-photo--4 {
-    opacity: 0.001;
-    animation: none;
-    display: none;
+  .mograph-scene--trio-cascade .mograph-photo-frame,
+  .mograph-scene--trio-scatter .mograph-photo-frame,
+  .mograph-scene--trio-arc .mograph-photo-frame {
+    width: clamp(96px, 30vw, 160px) !important;
+  }
+  .mograph-scene__lyrics {
+    padding-bottom: calc(clamp(1.25rem, 5vh, 2rem) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .mograph-scene__viewport {
+    flex-basis: 72%;
+  }
+}
+
+@media (min-width: 1025px) {
+  .mograph-scene__viewport {
+    flex-basis: 76%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mograph-scene__world,
+  .mograph-scene__bg {
+    animation: none !important;
   }
 }
 
