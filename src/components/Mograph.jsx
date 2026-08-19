@@ -26,6 +26,11 @@ const SCENE_DATA = [
   { photos: [12, 14], layout: "duo-diagonal", camera: "cinematic-close", string: null },
 ];
 
+// Typewriter pacing for the cinematic subtitle effect. Purely cosmetic —
+// does not touch lyric timestamps, audio timing, or lyric data structure.
+const TYPE_CHAR_STEP = 0.028; // seconds between each character "keystroke"
+const TYPE_LINE_GAP = 0.18; // pause before the next wrapped line starts typing
+
 // Resolve a scene's photo index list into actual photo sources.
 // Falls back gracefully (clamped/looped) if MOGRAPH_PHOTOS is ever
 // shorter than expected, so a config edit never crashes the app.
@@ -115,22 +120,32 @@ function Scene({ sceneKey, layout, camera, string, photos, background, duration,
         </div>
       </div>
 
-      {/* LYRICS — anchored below the photo composition, never over it */}
+      {/* LYRICS — cinematic subtitle, typed on character-by-character,
+          anchored below the photo composition, never over it */}
       <div className="mograph-scene__lyrics">
         {lines.length > 0 ? (
-          lines.map((line, li) => (
-            <p className="mograph-type-line" key={li} style={{ "--line-delay": `${li * 0.12}s` }}>
-              {line.split(" ").map((word, wi) => (
-                <span
-                  className="mograph-type-word"
-                  key={wi}
-                  style={{ "--word-delay": `${li * 0.12 + wi * 0.05}s` }}
-                >
-                  {word}&nbsp;
-                </span>
-              ))}
-            </p>
-          ))
+          lines.map((line, li) => {
+            const priorCharCount = lines
+              .slice(0, li)
+              .reduce((acc, l) => acc + l.length, 0);
+            const lineStartDelay =
+              priorCharCount * TYPE_CHAR_STEP + li * TYPE_LINE_GAP;
+            return (
+              <p className="mograph-type-line" key={li}>
+                {Array.from(line).map((ch, ci) => (
+                  <span
+                    className="mograph-type-char"
+                    key={ci}
+                    style={{
+                      "--char-delay": `${lineStartDelay + ci * TYPE_CHAR_STEP}s`,
+                    }}
+                  >
+                    {ch === " " ? "\u00A0" : ch}
+                  </span>
+                ))}
+              </p>
+            );
+          })
         ) : (
           <p className="mograph-type-line mograph-type-line--placeholder">✦</p>
         )}
