@@ -1,21 +1,38 @@
 import { useMemo } from "react";
-import { lyrics, MOGRAPH_PHOTOS } from "../data/config.js";
+import { lyrics, MOGRAPH_PHOTOS, MOGRAPH_BACKGROUNDS } from "../data/config.js";
 import "../styles/mograph.css";
 
-// Photo composition patterns per scene — cycles through variety (1,2,3,4,5 foto).
-const COMPOSITIONS = ["one", "two", "three", "four", "five"];
+// ==========================================================
+// SCENE CHOREOGRAPHY — deterministic, hand-authored mapping.
+// One entry per lyric line (9 scenes total). Nothing here is
+// randomized or auto-generated: every scene explicitly states
+// which photos it uses, which layout arrangement, which virtual
+// camera movement, and whether a string/connector appears.
+//
+// `photos`  -> indices into MOGRAPH_PHOTOS (0-based)
+// `layout`  -> one of the layout presets defined in mograph.css
+// `camera`  -> one of the camera movement presets in mograph.css
+// `string`  -> [fromPhotoPositionInScene, toPhotoPositionInScene] or null
+// ==========================================================
+const SCENE_DATA = [
+  { photos: [0, 1], layout: "duo-diagonal", camera: "push-in-slow", string: null },
+  { photos: [2, 3, 4], layout: "trio-cascade", camera: "pan-right-zoom-out", string: [0, 1] },
+  { photos: [5, 6], layout: "duo-stack", camera: "push-in-diagonal", string: null },
+  { photos: [7, 8, 9], layout: "trio-scatter", camera: "diagonal-sweep", string: [1, 2] },
+  { photos: [10, 11, 12], layout: "trio-arc", camera: "pull-out-reveal", string: null },
+  { photos: [13, 14], layout: "duo-cross", camera: "pan-left-zoom", string: [0, 1] },
+  { photos: [0, 2, 4], layout: "trio-cascade", camera: "diagonal-reveal", string: null },
+  { photos: [6, 8, 10], layout: "trio-scatter", camera: "zoom-out-layered", string: [0, 2] },
+  { photos: [12, 14], layout: "duo-diagonal", camera: "cinematic-close", string: null },
+];
 
-// Deterministically pick photo(s) for a given scene index.
-function photosForScene(sceneIndex) {
-  const compKey = COMPOSITIONS[sceneIndex % COMPOSITIONS.length];
-  const count =
-    compKey === "one" ? 1 : compKey === "two" ? 2 : compKey === "three" ? 3 : compKey === "four" ? 4 : 5;
-  const photos = [];
-  for (let i = 0; i < count; i++) {
-    const idx = (sceneIndex * 3 + i) % MOGRAPH_PHOTOS.length;
-    photos.push(MOGRAPH_PHOTOS[idx]);
-  }
-  return { compKey, photos };
+// Resolve a scene's photo index list into actual photo sources.
+// Falls back gracefully (clamped/looped) if MOGRAPH_PHOTOS is ever
+// shorter than expected, so a config edit never crashes the app.
+function resolveScenePhotos(sceneIndex) {
+  const data = SCENE_DATA[sceneIndex % SCENE_DATA.length];
+  const photos = data.photos.map((idx) => MOGRAPH_PHOTOS[idx % MOGRAPH_PHOTOS.length]);
+  return { ...data, photos };
 }
 
 // Pure presentational component. All timing is driven by App via
@@ -27,8 +44,22 @@ export default function Mograph({ active, entering, activeLyricIndex }) {
       <div className="mograph__stage">
         {lyrics.map((line, i) => {
           if (i !== activeLyricIndex) return null;
-          const { compKey, photos } = photosForScene(i);
-          return <Scene key={i} sceneKey={i} compKey={compKey} photos={photos} text={line.text} />;
+          const { layout, camera, string, photos } = resolveScenePhotos(i);
+          const background = MOGRAPH_BACKGROUNDS[i % MOGRAPH_BACKGROUNDS.length];
+          const duration = Math.max(line.end - line.start, 1);
+          return (
+            <Scene
+              key={i}
+              sceneKey={i}
+              layout={layout}
+              camera={camera}
+              string={string}
+              photos={photos}
+              background={background}
+              duration={duration}
+              text={line.text}
+            />
+          );
         })}
         {activeLyricIndex === -1 && <div className="mograph__intro-glow" aria-hidden="true" />}
       </div>
@@ -39,20 +70,53 @@ export default function Mograph({ active, entering, activeLyricIndex }) {
   );
 }
 
-function Scene({ sceneKey, compKey, photos, text }) {
+function Scene({ sceneKey, layout, camera, string, photos, background, duration, text }) {
   const lines = useMemo(() => (text || "").split("\n").filter(Boolean), [text]);
 
   return (
-    <div className={`mograph-scene mograph-scene--${compKey}`} key={sceneKey}>
-      <div className="mograph-scene__photos">
-        {photos.map((src, i) => (
-          <div className={`mograph-photo mograph-photo--${i}`} key={src + i}>
-            <img src={src} alt="" loading="eager" />
-          </div>
-        ))}
+    <div
+      className={`mograph-scene mograph-scene--${layout}`}
+      key={sceneKey}
+      style={{ "--scene-duration": `${duration}s` }}
+    >
+      {/* BACKGROUND LAYER — full-bleed environment for this scene */}
+      <div
+        className="mograph-scene__bg"
+        style={{ backgroundImage: `url(${background})` }}
+        aria-hidden="true"
+      >
+        <div className="mograph-scene__bg-overlay" />
       </div>
 
-      <div className="mograph-scene__type">
+      {/* CAMERA VIEWPORT — clips the world so it can pan/zoom freely */}
+      <div className="mograph-scene__viewport">
+        <div className={`mograph-scene__world mograph-cam--${camera}`}>
+          {photos.map((src, i) => (
+            <div className={`mograph-photo-frame mograph-photo-frame--${i}`} key={src + i}>
+              <div
+                className="mograph-photo-frame__inner"
+                style={{ "--entrance-delay": `${i * 0.16}s` }}
+              >
+                <img src={src} alt="" loading="eager" />
+              </div>
+            </div>
+          ))}
+
+          {string && (
+            <svg
+              className={`mograph-string mograph-string--${layout}-${string[0]}-${string[1]}`}
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path className="mograph-string__path" d="M20,25 Q50,10 80,75" />
+            </svg>
+          )}
+        </div>
+      </div>
+
+      {/* LYRICS — anchored below the photo composition, never over it */}
+      <div className="mograph-scene__lyrics">
         {lines.length > 0 ? (
           lines.map((line, li) => (
             <p className="mograph-type-line" key={li} style={{ "--line-delay": `${li * 0.12}s` }}>
