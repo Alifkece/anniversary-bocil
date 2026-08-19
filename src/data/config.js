@@ -28,6 +28,21 @@ export const MOGRAPH_PHOTOS = [
   "/images/photo-15.jpg",
 ];
 
+// -------------------- MOGRAPH BACKGROUNDS (9 background = 9 scene) --------------------
+// Taruh 9 file gambar di public/images/ dengan nama persis di bawah ini.
+// Scene 1 lyric pakai background-01.jpg, scene 2 pakai background-02.jpg, dst.
+export const MOGRAPH_BACKGROUNDS = [
+  "/images/background-01.jpg",
+  "/images/background-02.jpg",
+  "/images/background-03.jpg",
+  "/images/background-04.jpg",
+  "/images/background-05.jpg",
+  "/images/background-06.jpg",
+  "/images/background-07.jpg",
+  "/images/background-08.jpg",
+  "/images/background-09.jpg",
+];
+
 // -------------------- ENDING PHOTOS (10 foto) --------------------
 export const ENDING_PHOTOS = [
   "/images/photo-16.jpg",
