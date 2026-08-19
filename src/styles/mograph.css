@@ -182,6 +182,10 @@
 }
 
 /* ---------- STRING / CONNECTOR ---------- */
+/* The string now visibly DRAWS itself (stroke-dashoffset) instead of
+   fading in, timed to land exactly on the handoff between the two
+   photos it connects. Container opacity animation kept as a base so
+   the element is never visible before its scene mounts. */
 .mograph-string {
   position: absolute;
   inset: 0;
@@ -189,8 +193,8 @@
   height: 100%;
   overflow: visible;
   opacity: 0;
-  animation: string-reveal 1.2s var(--ease-soft) both;
-  animation-delay: 0.35s;
+  animation: string-container-in 0.4s var(--ease-soft) both;
+  animation-delay: 0.2s;
 }
 
 .mograph-string__path {
@@ -198,16 +202,57 @@
   stroke: var(--gold-soft);
   stroke-width: 0.35;
   stroke-linecap: round;
-  opacity: 0.55;
+  opacity: 0.6;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation-name: string-draw;
+  animation-timing-function: var(--ease-soft);
+  animation-fill-mode: both;
+  animation-duration: var(--scene-duration, 6s);
 }
 
-@keyframes string-reveal {
+@keyframes string-container-in {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
   }
+}
+
+/* Draw window matches the lead->trail focus handoff for each pair
+   (see frame-role-* below): duo transitions around mid-scene, trio's
+   first pair transitions around 1/3, second pair around 2/3. */
+@keyframes string-draw {
+  0%, 40% { stroke-dashoffset: 1; }
+  58%, 100% { stroke-dashoffset: 0; }
+}
+@keyframes string-draw-early {
+  0%, 26% { stroke-dashoffset: 1; }
+  38%, 100% { stroke-dashoffset: 0; }
+}
+@keyframes string-draw-late {
+  0%, 60% { stroke-dashoffset: 1; }
+  72%, 100% { stroke-dashoffset: 0; }
+}
+/* Pair spans first photo to last (skips the middle) — draws across
+   the full first-to-second-handoff window instead of one segment. */
+@keyframes string-draw-full {
+  0%, 26% { stroke-dashoffset: 1; }
+  72%, 100% { stroke-dashoffset: 0; }
+}
+
+.mograph-string[class*="--duo"] .mograph-string__path {
+  animation-name: string-draw;
+}
+.mograph-string[class*="--trio"][class$="-0-1"] .mograph-string__path {
+  animation-name: string-draw-early;
+}
+.mograph-string[class*="--trio"][class$="-1-2"] .mograph-string__path {
+  animation-name: string-draw-late;
+}
+.mograph-string[class*="--trio"][class$="-0-2"] .mograph-string__path {
+  animation-name: string-draw-full;
 }
 
 /* =========================================================
@@ -318,45 +363,165 @@
 }
 
 /* =========================================================
+   FOCUS CHOREOGRAPHY — the photo currently "in focus" stays
+   sharp/full-scale while the others sit dimmed/receded, then the
+   next photo rises into focus as the camera arrives. Runs as a
+   second animation on the (already-positioned) frame element, so
+   the existing --fx/--fy/--frot placement is untouched — this only
+   adds scale/opacity/blur drift on top of it.
+   ========================================================= */
+.mograph-scene--duo-diagonal .mograph-photo-frame--0,
+.mograph-scene--duo-stack .mograph-photo-frame--0,
+.mograph-scene--duo-cross .mograph-photo-frame--0 {
+  animation: frame-role-lead-duo var(--scene-duration, 6s) var(--ease-soft) both;
+}
+.mograph-scene--duo-diagonal .mograph-photo-frame--1,
+.mograph-scene--duo-stack .mograph-photo-frame--1,
+.mograph-scene--duo-cross .mograph-photo-frame--1 {
+  animation: frame-role-trail-duo var(--scene-duration, 6s) var(--ease-soft) both;
+}
+
+.mograph-scene--trio-cascade .mograph-photo-frame--0,
+.mograph-scene--trio-scatter .mograph-photo-frame--0,
+.mograph-scene--trio-arc .mograph-photo-frame--0 {
+  animation: frame-role-lead-trio var(--scene-duration, 6s) var(--ease-soft) both;
+}
+.mograph-scene--trio-cascade .mograph-photo-frame--1,
+.mograph-scene--trio-scatter .mograph-photo-frame--1,
+.mograph-scene--trio-arc .mograph-photo-frame--1 {
+  animation: frame-role-mid-trio var(--scene-duration, 6s) var(--ease-soft) both;
+}
+.mograph-scene--trio-cascade .mograph-photo-frame--2,
+.mograph-scene--trio-scatter .mograph-photo-frame--2,
+.mograph-scene--trio-arc .mograph-photo-frame--2 {
+  animation: frame-role-trail-trio var(--scene-duration, 6s) var(--ease-soft) both;
+}
+
+@keyframes frame-role-lead-duo {
+  0%, 44% {
+    transform: translate(var(--fx, 0), var(--fy, 0)) rotate(var(--frot, 0deg)) scale(1);
+    filter: blur(0);
+    opacity: 1;
+  }
+  58%, 100% {
+    transform: translate(calc(var(--fx, 0%) + 4%), calc(var(--fy, 0%) + 3%)) rotate(var(--frot, 0deg)) scale(0.8);
+    filter: blur(2.5px);
+    opacity: 0.32;
+  }
+}
+@keyframes frame-role-trail-duo {
+  0%, 40% {
+    transform: translate(var(--fx, 0), var(--fy, 0)) rotate(var(--frot, 0deg)) scale(0.88);
+    filter: blur(1px);
+    opacity: 0.55;
+  }
+  58%, 100% {
+    transform: translate(var(--fx, 0), var(--fy, 0)) rotate(var(--frot, 0deg)) scale(1.04);
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+@keyframes frame-role-lead-trio {
+  0%, 26% {
+    transform: translate(var(--fx, 0), var(--fy, 0)) rotate(var(--frot, 0deg)) scale(1);
+    filter: blur(0);
+    opacity: 1;
+  }
+  38%, 100% {
+    transform: translate(calc(var(--fx, 0%) + 4%), calc(var(--fy, 0%) + 3%)) rotate(var(--frot, 0deg)) scale(0.78);
+    filter: blur(3px);
+    opacity: 0.26;
+  }
+}
+@keyframes frame-role-mid-trio {
+  0%, 24% {
+    transform: translate(var(--fx, 0), var(--fy, 0)) rotate(var(--frot, 0deg)) scale(0.86);
+    filter: blur(1px);
+    opacity: 0.5;
+  }
+  32%, 60% {
+    transform: translate(var(--fx, 0), var(--fy, 0)) rotate(var(--frot, 0deg)) scale(1.03);
+    filter: blur(0);
+    opacity: 1;
+  }
+  72%, 100% {
+    transform: translate(calc(var(--fx, 0%) - 3%), calc(var(--fy, 0%) + 4%)) rotate(var(--frot, 0deg)) scale(0.82);
+    filter: blur(2.5px);
+    opacity: 0.3;
+  }
+}
+@keyframes frame-role-trail-trio {
+  0%, 58% {
+    transform: translate(var(--fx, 0), var(--fy, 0)) rotate(var(--frot, 0deg)) scale(0.86);
+    filter: blur(1px);
+    opacity: 0.5;
+  }
+  72%, 100% {
+    transform: translate(var(--fx, 0), var(--fy, 0)) rotate(var(--frot, 0deg)) scale(1.05);
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+/* =========================================================
    CAMERA MOVEMENTS — one distinct feel per scene. All target
    .mograph-scene__world only, so frames/strings/background
    stay decoupled and every element rides the same camera.
    ========================================================= */
+/* Multi-stop "follow" camera: each preset now has intermediate stops
+   timed to the photo focus handoff (see frame-role-* below), so the
+   viewport visibly travels toward the next photo instead of just
+   zooming on the spot. Start/end feel preserved from the original. */
 @keyframes cam-push-in-slow {
-  0% { transform: scale(1.02) translate(0, 0); }
-  100% { transform: scale(1.16) translate(-1%, -1%); }
+  0% { transform: scale(1.02) translate(-1%, -1%); }
+  50% { transform: scale(1.08) translate(0, 0); }
+  100% { transform: scale(1.18) translate(1.8%, 1.4%); }
 }
 @keyframes cam-pan-right-zoom-out {
-  0% { transform: scale(1.28) translate(-4%, 1%); }
-  100% { transform: scale(1.05) translate(4%, -1%); }
+  0% { transform: scale(1.28) translate(-3%, -2%); }
+  33% { transform: scale(1.2) translate(-1%, 0); }
+  67% { transform: scale(1.1) translate(1.5%, 1%); }
+  100% { transform: scale(1.02) translate(4%, 3%); }
 }
 @keyframes cam-push-in-diagonal {
-  0% { transform: scale(1.05) translate(-3%, 2%) rotate(-0.4deg); }
-  100% { transform: scale(1.3) translate(3%, -2%) rotate(0.4deg); }
+  0% { transform: scale(1.05) translate(0, -1.5%) rotate(-0.3deg); }
+  50% { transform: scale(1.15) translate(0, 0) rotate(0deg); }
+  100% { transform: scale(1.32) translate(0, 1.8%) rotate(0.3deg); }
 }
 @keyframes cam-diagonal-sweep {
-  0% { transform: scale(1.2) translate(6%, -5%) rotate(0.6deg); }
-  100% { transform: scale(1.28) translate(-6%, 5%) rotate(-0.6deg); }
+  0% { transform: scale(1.2) translate(-3%, -2%) rotate(0.4deg); }
+  33% { transform: scale(1.24) translate(2%, -2%) rotate(0.1deg); }
+  67% { transform: scale(1.27) translate(1%, 1.5%) rotate(-0.2deg); }
+  100% { transform: scale(1.3) translate(-1%, 3%) rotate(-0.5deg); }
 }
 @keyframes cam-pull-out-reveal {
-  0% { transform: scale(1.42) translate(0, 1%); }
-  100% { transform: scale(1.08) translate(0, -1%); }
+  0% { transform: scale(1.42) translate(-2%, 1.5%); }
+  33% { transform: scale(1.28) translate(0, -1%); }
+  67% { transform: scale(1.16) translate(1%, 0.5%); }
+  100% { transform: scale(1.06) translate(2%, 1%); }
 }
 @keyframes cam-pan-left-zoom {
-  0% { transform: scale(1.1) translate(5%, 0); }
-  100% { transform: scale(1.3) translate(-5%, 0); }
+  0% { transform: scale(1.08) translate(2.5%, 1%); }
+  50% { transform: scale(1.18) translate(0, 0); }
+  100% { transform: scale(1.32) translate(-2.5%, -1.5%); }
 }
 @keyframes cam-diagonal-reveal {
-  0% { transform: scale(1.32) translate(-5%, 5%) rotate(0.5deg); }
-  100% { transform: scale(1.1) translate(5%, -5%) rotate(-0.5deg); }
+  0% { transform: scale(1.32) translate(-2.5%, 2%) rotate(0.5deg); }
+  33% { transform: scale(1.22) translate(0, 0.5%) rotate(0.2deg); }
+  67% { transform: scale(1.14) translate(2%, -1%) rotate(-0.2deg); }
+  100% { transform: scale(1.08) translate(3%, -2.5%) rotate(-0.5deg); }
 }
 @keyframes cam-zoom-out-layered {
-  0% { transform: scale(1.4) rotate(0.7deg); }
-  100% { transform: scale(1.1) rotate(-0.7deg); }
+  0% { transform: scale(1.4) translate(-2%, -2%) rotate(0.5deg); }
+  33% { transform: scale(1.3) translate(1.5%, -2%) rotate(0.2deg); }
+  67% { transform: scale(1.18) translate(0.5%, 1.5%) rotate(-0.2deg); }
+  100% { transform: scale(1.08) translate(-1%, 2.5%) rotate(-0.5deg); }
 }
 @keyframes cam-cinematic-close {
-  0% { transform: scale(1.06) translate(0, 1%); }
-  100% { transform: scale(1.34) translate(0, -1%); }
+  0% { transform: scale(1.06) translate(-1.5%, -1.2%); }
+  50% { transform: scale(1.2) translate(0.3%, 0.2%); }
+  100% { transform: scale(1.36) translate(1.8%, 1.5%); }
 }
 
 .mograph-cam--push-in-slow { animation-name: cam-push-in-slow; }
@@ -465,8 +630,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .mograph-scene__world,
-  .mograph-scene__bg {
+  .mograph-scene__bg,
+  .mograph-photo-frame,
+  .mograph-string__path {
     animation: none !important;
+  }
+  .mograph-string__path {
+    stroke-dashoffset: 0;
   }
 }
 
