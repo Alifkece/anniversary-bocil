@@ -1,0 +1,110 @@
+.envelope-section {
+  position: relative;
+  z-index: 3;
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8vh 6vw;
+}
+
+.envelope {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  animation: envelope-float 4s ease-in-out infinite;
+}
+
+@keyframes envelope-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+.envelope__glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 220px;
+  height: 220px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(227, 184, 115, 0.35), transparent 70%);
+  filter: blur(20px);
+  z-index: -1;
+}
+
+.envelope__body {
+  position: relative;
+  width: min(70vw, 240px);
+  height: min(52vw, 170px);
+  background: linear-gradient(155deg, #fbf3e4, var(--paper));
+  border-radius: 8px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.envelope__flap {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(155deg, #f4e6c9, #e9d3a5);
+  clip-path: polygon(0 0, 50% 55%, 100% 0);
+}
+
+.envelope__seal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--rose);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.envelope__hint {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+  opacity: 0.75;
+}
+
+.envelope__opened {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: envelope-open-fade 0.9s var(--ease-soft);
+}
+
+@keyframes envelope-open-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.envelope__flap-open {
+  width: min(70vw, 240px);
+  height: 40px;
+  background: linear-gradient(155deg, #f4e6c9, #e9d3a5);
+  clip-path: polygon(0 100%, 50% 10%, 100% 100%);
+  margin-bottom: -6px;
+}

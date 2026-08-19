@@ -1,0 +1,106 @@
+.falling-stars {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 0%, #1b1430 0%, var(--night-deep) 60%);
+}
+
+.falling-stars__glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  animation: fs-drift 14s ease-in-out infinite;
+}
+
+.falling-stars__glow--a {
+  width: 40vw;
+  height: 40vw;
+  background: var(--rose);
+  top: -5%;
+  left: -10%;
+}
+
+.falling-stars__glow--b {
+  width: 45vw;
+  height: 45vw;
+  background: var(--gold);
+  bottom: -10%;
+  right: -10%;
+  animation-delay: 4s;
+}
+
+@keyframes fs-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(4%, -6%);
+  }
+}
+
+.falling-stars__twinkle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  animation: fs-twinkle ease-in-out infinite;
+}
+
+@keyframes fs-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+}
+
+.falling-stars__shooting {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px 1px #fff;
+  animation: fs-shoot linear infinite;
+  opacity: 0;
+}
+
+.falling-stars__shooting::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 90px;
+  height: 1px;
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.9), transparent);
+  transform: translateY(-50%) scaleX(var(--scale));
+  transform-origin: right;
+}
+
+@keyframes fs-shoot {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(var(--angle));
+  }
+  5% {
+    opacity: 1;
+  }
+  35% {
+    opacity: 1;
+    transform: translate(-260px, 190px) rotate(var(--angle));
+  }
+  40% {
+    opacity: 0;
+    transform: translate(-280px, 205px) rotate(var(--angle));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-280px, 205px) rotate(var(--angle));
+  }
+}

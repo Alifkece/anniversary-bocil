@@ -1,0 +1,51 @@
+.floating-photos {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.floating-photos__item {
+  position: absolute;
+  bottom: -20%;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  opacity: 0;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+  animation: float-up linear infinite;
+}
+
+.floating-photos__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(0.85);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate(calc(var(--drift) * 40px), -55vh) rotate(var(--rotate)) scale(1);
+    opacity: 0.85;
+  }
+  92% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: translate(calc(var(--drift) * 90px), -115vh) rotate(calc(var(--rotate) * -1)) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .floating-photos__item {
+    filter: saturate(0.95);
+  }
+}

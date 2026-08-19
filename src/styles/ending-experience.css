@@ -1,0 +1,34 @@
+.ending-experience {
+  position: relative;
+  min-height: 100vh;
+  background: var(--night-deep);
+  animation: ending-fade-in 1.4s var(--ease-soft);
+}
+
+@keyframes ending-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ending-experience__content {
+  position: relative;
+  z-index: 3;
+}
+
+.ending-experience__spacer {
+  height: 20vh;
+}
+
+.ending-experience__spacer--end {
+  height: 12vh;
+}
+
+@media (min-width: 900px) {
+  .ending-experience__spacer {
+    height: 26vh;
+  }
+}

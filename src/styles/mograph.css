@@ -1,0 +1,281 @@
+.mograph {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.7s var(--ease-soft);
+}
+
+.mograph--enter,
+.mograph--active {
+  opacity: 1;
+}
+
+.mograph__stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mograph__intro-glow {
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold) 0%, transparent 70%);
+  opacity: 0.4;
+  animation: intro-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes intro-pulse {
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.25;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.5;
+  }
+}
+
+.mograph__vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.65) 100%);
+  z-index: 5;
+}
+
+.mograph__grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  z-index: 6;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- SCENE ---------- */
+.mograph-scene {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.mograph-scene__photos {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.mograph-photo {
+  position: absolute;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 6px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  animation: photo-in 1.4s var(--ease-soft) both;
+}
+
+.mograph-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@keyframes photo-in {
+  0% {
+    opacity: 0;
+    transform: scale(1.25) rotate(2deg);
+    filter: blur(6px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.06) rotate(0deg);
+  }
+}
+
+/* --- composition: one --- */
+.mograph-scene--one .mograph-photo--0 {
+  width: min(58vw, 420px);
+  animation-name: photo-in-zoom-slow;
+}
+@keyframes photo-in-zoom-slow {
+  0% {
+    opacity: 0;
+    transform: scale(1.4);
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.1);
+    filter: blur(0);
+  }
+}
+
+/* --- composition: two --- */
+.mograph-scene--two .mograph-photo--0 {
+  width: min(36vw, 260px);
+  transform: translate(-58%, -18%) rotate(-4deg);
+}
+.mograph-scene--two .mograph-photo--1 {
+  width: min(36vw, 260px);
+  transform: translate(58%, 18%) rotate(3deg);
+  animation-delay: 0.15s;
+}
+
+/* --- composition: three --- */
+.mograph-scene--three .mograph-photo--0 {
+  width: min(30vw, 220px);
+  transform: translate(-70%, -30%) rotate(-6deg);
+}
+.mograph-scene--three .mograph-photo--1 {
+  width: min(30vw, 220px);
+  transform: translate(0, 40%) rotate(2deg);
+  animation-delay: 0.12s;
+}
+.mograph-scene--three .mograph-photo--2 {
+  width: min(30vw, 220px);
+  transform: translate(70%, -25%) rotate(5deg);
+  animation-delay: 0.24s;
+}
+
+/* --- composition: four --- */
+.mograph-scene--four .mograph-photo--0 {
+  width: min(24vw, 180px);
+  transform: translate(-75%, -60%) rotate(-5deg);
+}
+.mograph-scene--four .mograph-photo--1 {
+  width: min(24vw, 180px);
+  transform: translate(65%, -55%) rotate(4deg);
+  animation-delay: 0.1s;
+}
+.mograph-scene--four .mograph-photo--2 {
+  width: min(24vw, 180px);
+  transform: translate(-65%, 55%) rotate(3deg);
+  animation-delay: 0.2s;
+}
+.mograph-scene--four .mograph-photo--3 {
+  width: min(24vw, 180px);
+  transform: translate(75%, 60%) rotate(-3deg);
+  animation-delay: 0.3s;
+}
+
+/* --- composition: five --- */
+.mograph-scene--five .mograph-photo--0 {
+  width: min(20vw, 150px);
+  transform: translate(0, -70%) rotate(-2deg);
+}
+.mograph-scene--five .mograph-photo--1 {
+  width: min(20vw, 150px);
+  transform: translate(-78%, -20%) rotate(-6deg);
+  animation-delay: 0.1s;
+}
+.mograph-scene--five .mograph-photo--2 {
+  width: min(20vw, 150px);
+  transform: translate(78%, -20%) rotate(6deg);
+  animation-delay: 0.2s;
+}
+.mograph-scene--five .mograph-photo--3 {
+  width: min(20vw, 150px);
+  transform: translate(-45%, 65%) rotate(-3deg);
+  animation-delay: 0.3s;
+}
+.mograph-scene--five .mograph-photo--4 {
+  width: min(20vw, 150px);
+  transform: translate(45%, 65%) rotate(3deg);
+  animation-delay: 0.4s;
+}
+
+/* ---------- KINETIC TYPOGRAPHY ---------- */
+.mograph-scene__type {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 0 8vw;
+  max-width: 900px;
+}
+
+.mograph-type-line {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-style: italic;
+  font-size: clamp(1.6rem, 6vw, 3.2rem);
+  line-height: 1.25;
+  color: var(--ink);
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+}
+
+.mograph-type-line--placeholder {
+  color: var(--gold-soft);
+  opacity: 0.6;
+  font-size: 2rem;
+}
+
+.mograph-type-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.5em) scale(0.92);
+  filter: blur(8px);
+  animation: word-reveal 0.6s var(--ease-soft) both;
+  animation-delay: var(--word-delay);
+}
+
+@keyframes word-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(0.5em) scale(0.92);
+    filter: blur(8px);
+    letter-spacing: 0.05em;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+    letter-spacing: normal;
+  }
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 640px) {
+  .mograph-scene--four .mograph-photo,
+  .mograph-scene--five .mograph-photo {
+    width: min(34vw, 150px) !important;
+  }
+  .mograph-scene--four .mograph-photo--3,
+  .mograph-scene--five .mograph-photo--3,
+  .mograph-scene--five .mograph-photo--4 {
+    opacity: 0.001;
+    animation: none;
+    display: none;
+  }
+}
+
+.veil-transition {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, var(--night-soft), var(--night-deep));
+  z-index: 50;
+  animation: veil-pulse 1.2s var(--ease-soft);
+}
+
+@keyframes veil-pulse {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
