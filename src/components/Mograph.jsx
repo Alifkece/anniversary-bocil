@@ -32,68 +32,61 @@ const TYPE_CHAR_STEP = 0.028; // seconds between each character "keystroke"
 const TYPE_LINE_GAP = 0.18; // pause before the next wrapped line starts typing
 
 // ==========================================================
-// SCRAPBOOK DECORATION — purely visual set-dressing layered into
-// the existing world alongside the photos. Hand-authored per scene
-// (nothing random), each item pinned to a %-position with its own
-// rotation/scale/entrance delay. `layer` controls stacking + parallax:
-//   "bg"   -> behind the photos, drifts least
-//   "deco" -> above the photos (tape/notes/labels), no extra drift
-//   "fg"   -> topmost, drifts most (foreground read)
-// Does not touch photos, layout, camera, or string systems.
+// SCRAPBOOK DECORATION — small accents ATTACHED to individual
+// photo frames (rendered as children of .mograph-photo-frame), so
+// they inherit that frame's own translate/rotate/scale automatically
+// — when the photo moves, the tape/label/doodle on it moves with it.
+// Kept deliberately small/edge-anchored: the photo stays the hero.
+// `photoIndex` -> which frame within the scene's photo list (0-based)
+// `corner`     -> anchor point on that frame
+// `delay`      -> extra stagger on top of the photo's own entrance
 // ==========================================================
 const SCENE_DECOR = [
   [
-    { id: "s0-paper", type: "paper", layer: "bg", top: "22%", left: "14%", rot: -6, scale: 1.05, delay: 0.1 },
-    { id: "s0-tape", type: "tape", layer: "deco", top: "26%", left: "30%", rot: 10, delay: 0.5 },
-    { id: "s0-label", type: "label", layer: "deco", top: "86%", left: "76%", rot: -3, delay: 0.7, text: "MEMORY" },
-    { id: "s0-star", type: "doodle-star", layer: "fg", top: "10%", left: "86%", scale: 0.7, delay: 0.9 },
+    { id: "s0-tape", photoIndex: 0, type: "tape", corner: "tl", rot: -8, delay: 0.08 },
+    { id: "s0-label", photoIndex: 0, type: "label", corner: "bc", rot: -2, delay: 0.16, text: "MEMORY" },
+    { id: "s0-star", photoIndex: 1, type: "doodle-star", corner: "tr", rot: 0, delay: 0.24, scale: 0.75 },
   ],
   [
-    { id: "s1-paper", type: "paper", layer: "bg", top: "16%", left: "82%", rot: 5, scale: 0.9, delay: 0.1 },
-    { id: "s1-label", type: "label", layer: "deco", top: "80%", left: "18%", rot: 4, delay: 0.4, text: "DAY" },
-    { id: "s1-tape", type: "tape", layer: "deco", top: "32%", left: "54%", rot: -8, delay: 0.6 },
-    { id: "s1-arrow", type: "doodle-arrow", layer: "fg", top: "46%", left: "48%", rot: 18, scale: 0.8, delay: 0.8 },
+    { id: "s1-tape", photoIndex: 0, type: "tape", corner: "tr", rot: 9, delay: 0.08 },
+    { id: "s1-label", photoIndex: 1, type: "label", corner: "br", rot: 3, delay: 0.16, text: "DAY" },
+    { id: "s1-arrow", photoIndex: 2, type: "doodle-arrow", corner: "tl", rot: -12, delay: 0.22, scale: 0.7 },
   ],
   [
-    { id: "s2-sticky", type: "sticky", layer: "deco", top: "20%", left: "78%", rot: 6, scale: 0.9, delay: 0.2, text: "LOVE" },
-    { id: "s2-tape", type: "tape", layer: "deco", top: "70%", left: "24%", rot: -9, delay: 0.45 },
-    { id: "s2-heart", type: "doodle-heart", layer: "fg", top: "86%", left: "62%", rot: -6, scale: 0.7, delay: 0.7 },
+    { id: "s2-tape", photoIndex: 0, type: "tape", corner: "tr", rot: -7, delay: 0.08 },
+    { id: "s2-sticky", photoIndex: 1, type: "sticky", corner: "bl", rot: 6, delay: 0.16, text: "LOVE" },
   ],
   [
-    { id: "s3-news", type: "newspaper", layer: "bg", top: "80%", left: "14%", rot: -7, scale: 0.9, delay: 0.15 },
-    { id: "s3-clip", type: "clip", layer: "deco", top: "16%", left: "58%", rot: -4, scale: 0.9, delay: 0.35 },
-    { id: "s3-label", type: "label", layer: "deco", top: "10%", left: "18%", rot: -5, delay: 0.5, text: "NOTE" },
-    { id: "s3-scribble", type: "doodle-scribble", layer: "fg", top: "56%", left: "86%", rot: 10, scale: 0.7, delay: 0.75 },
+    { id: "s3-scribble", photoIndex: 0, type: "doodle-scribble", corner: "tl", rot: 6, delay: 0.1, scale: 0.7 },
+    { id: "s3-tape", photoIndex: 1, type: "tape", corner: "bl", rot: -9, delay: 0.18 },
+    { id: "s3-label", photoIndex: 2, type: "label", corner: "tr", rot: -4, delay: 0.24, text: "NOTE" },
+    { id: "s3-clip", photoIndex: 2, type: "clip", corner: "br", rot: 4, delay: 0.3 },
   ],
   [
-    { id: "s4-paper", type: "paper", layer: "bg", top: "8%", left: "10%", rot: -6, delay: 0.1 },
-    { id: "s4-sticky", type: "sticky", layer: "deco", top: "84%", left: "70%", rot: 5, scale: 0.85, delay: 0.3, text: "ARCHIVE" },
-    { id: "s4-tape", type: "tape", layer: "deco", top: "24%", left: "44%", rot: 11, delay: 0.5 },
-    { id: "s4-label", type: "label", layer: "deco", top: "72%", left: "14%", rot: -7, delay: 0.65, text: "PHOTO" },
-    { id: "s4-star", type: "doodle-star", layer: "fg", top: "14%", left: "84%", scale: 0.6, delay: 0.85 },
-    { id: "s4-news", type: "newspaper", layer: "fg", top: "90%", left: "40%", rot: 5, scale: 0.75, delay: 1.0 },
+    { id: "s4-tape", photoIndex: 0, type: "tape", corner: "tl", rot: 8, delay: 0.08 },
+    { id: "s4-label", photoIndex: 0, type: "label", corner: "bc", rot: -3, delay: 0.16, text: "ARCHIVE" },
+    { id: "s4-star", photoIndex: 0, type: "doodle-star", corner: "tr", rot: 0, delay: 0.24, scale: 0.65 },
+    { id: "s4-tape2", photoIndex: 1, type: "tape", corner: "tr", rot: -6, delay: 0.12 },
+    { id: "s4-sticky2", photoIndex: 2, type: "sticky", corner: "bl", rot: 5, delay: 0.14, text: "PHOTO" },
   ],
   [
-    { id: "s5-tape", type: "tape", layer: "fg", top: "18%", left: "72%", rot: -11, delay: 0.2 },
-    { id: "s5-sticky", type: "sticky", layer: "deco", top: "82%", left: "20%", rot: 6, scale: 0.8, delay: 0.4, text: "DAY" },
-    { id: "s5-paper", type: "paper", layer: "bg", top: "66%", left: "86%", rot: 6, scale: 0.85, delay: 0.15 },
+    { id: "s5-tape", photoIndex: 0, type: "tape", corner: "tr", rot: -10, delay: 0.08 },
+    { id: "s5-label", photoIndex: 1, type: "label", corner: "bl", rot: 4, delay: 0.16, text: "DAY" },
   ],
   [
-    { id: "s6-news", type: "newspaper", layer: "bg", top: "12%", left: "80%", rot: 7, scale: 0.95, delay: 0.1 },
-    { id: "s6-sticker", type: "sticker", layer: "deco", top: "30%", left: "14%", delay: 0.3 },
-    { id: "s6-tape", type: "tape", layer: "deco", top: "60%", left: "84%", rot: -13, delay: 0.45 },
-    { id: "s6-label", type: "label", layer: "deco", top: "86%", left: "46%", rot: 3, delay: 0.6, text: "MEMORY" },
-    { id: "s6-scribble", type: "doodle-scribble", layer: "fg", top: "44%", left: "8%", rot: -16, scale: 0.75, delay: 0.8 },
-    { id: "s6-paper", type: "paper", layer: "fg", top: "8%", left: "30%", rot: -9, scale: 0.7, delay: 0.95 },
+    { id: "s6-tape", photoIndex: 0, type: "tape", corner: "tl", rot: 10, delay: 0.08 },
+    { id: "s6-scribble", photoIndex: 0, type: "doodle-scribble", corner: "bl", rot: -8, delay: 0.18, scale: 0.65 },
+    { id: "s6-label", photoIndex: 1, type: "label", corner: "tr", rot: 3, delay: 0.14, text: "MEMORY" },
+    { id: "s6-sticker", photoIndex: 2, type: "sticker", corner: "br", rot: 0, delay: 0.2 },
+    { id: "s6-tape2", photoIndex: 2, type: "tape", corner: "tr", rot: -7, delay: 0.26 },
   ],
   [
-    { id: "s7-sticker", type: "sticker", layer: "bg", top: "20%", left: "18%", delay: 0.15 },
-    { id: "s7-arrow", type: "doodle-arrow", layer: "deco", top: "72%", left: "76%", rot: -28, scale: 0.75, delay: 0.5 },
-    { id: "s7-sweep", type: "sweep", layer: "fg", delay: 0 },
+    { id: "s7-arrow", photoIndex: 0, type: "doodle-arrow", corner: "tl", rot: 14, delay: 0.1, scale: 0.7 },
+    { id: "s7-tape", photoIndex: 2, type: "tape", corner: "br", rot: -9, delay: 0.16 },
   ],
   [
-    { id: "s8-label", type: "label", layer: "deco", top: "80%", left: "75%", rot: -3, delay: 0.3, text: "LOVE" },
-    { id: "s8-tape", type: "tape", layer: "deco", top: "16%", left: "26%", rot: 6, delay: 0.5 },
+    { id: "s8-tape", photoIndex: 1, type: "tape", corner: "tl", rot: 6, delay: 0.1 },
+    { id: "s8-label", photoIndex: 1, type: "label", corner: "bc", rot: -2, delay: 0.2, text: "LOVE" },
   ],
 ];
 
@@ -101,73 +94,57 @@ const SCENE_DECOR = [
 // plain fade — cycles through 3 tones so no two consecutive flashes match.
 const SCENE_FLASH = [null, "amber", null, null, "rose", null, "white", null, "amber"];
 
-const DECOR_MICRO = {
-  paper: "decor-float",
-  newspaper: "decor-float",
-  tape: "decor-wiggle",
-  sticky: "decor-float",
-  label: "decor-float",
-  sticker: "decor-bob",
+const CORNER_STYLE = {
+  tl: { top: "-9px", left: "-7px" },
+  tr: { top: "-9px", right: "-7px" },
+  bl: { bottom: "3px", left: "-9px" },
+  br: { bottom: "3px", right: "-9px" },
+  bc: { bottom: "-9px", left: "50%", "--d-center": "1" },
 };
 
-function renderDecor(item) {
+// Renders a single small accent, anchored to a corner of whichever
+// .mograph-photo-frame it belongs to (see groupDecorByPhoto below) —
+// it is a DOM child of that frame, so the frame's own transform
+// (translate/rotate/scale from the camera + focus choreography)
+// carries the accent along with the photo automatically.
+function renderPhotoDecor(item, baseDelay) {
+  const anchor = CORNER_STYLE[item.corner] || CORNER_STYLE.tl;
+  const totalDelay = `${baseDelay + (item.delay ?? 0)}s`;
   const style = {
-    "--d-top": item.top,
-    "--d-left": item.left,
+    ...anchor,
     "--d-rot": `${item.rot ?? 0}deg`,
     "--d-scale": item.scale ?? 1,
-    "--d-delay": `${item.delay ?? 0}s`,
+    "--d-delay": totalDelay,
+    animationDelay: totalDelay,
   };
-  const micro = DECOR_MICRO[item.type] || "";
-
-  if (item.type === "sweep") {
-    return <div key={item.id} className="decor-sweep" style={{ animationDelay: `${item.delay ?? 0}s` }} />;
-  }
+  const centered = anchor["--d-center"] ? " mograph-photo-decor--centered" : "";
+  const micro =
+    item.type === "tape" ? "decor-wiggle" : item.type === "sticker" ? "decor-bob" : item.type === "sticky" || item.type === "label" ? "decor-float" : "";
 
   switch (item.type) {
-    case "paper":
-      return (
-        <div key={item.id} className="mograph-decor" style={style}>
-          <div className={`decor decor-paper ${micro}`} />
-        </div>
-      );
-    case "newspaper":
-      return (
-        <div key={item.id} className="mograph-decor" style={style}>
-          <div className={`decor decor-newspaper ${micro}`} />
-        </div>
-      );
     case "tape":
-      return (
-        <div key={item.id} className="mograph-decor" style={style}>
-          <div className={`decor decor-tape ${micro}`} />
-        </div>
-      );
+      return <div key={item.id} className={`mograph-photo-decor${centered}`} style={style}><div className={`decor decor-tape ${micro}`} /></div>;
     case "sticky":
       return (
-        <div key={item.id} className="mograph-decor" style={style}>
-          <div className={`decor decor-sticky ${micro}`}>
-            <span>{item.text}</span>
-          </div>
+        <div key={item.id} className={`mograph-photo-decor${centered}`} style={style}>
+          <div className={`decor decor-sticky ${micro}`}><span>{item.text}</span></div>
         </div>
       );
     case "label":
       return (
-        <div key={item.id} className="mograph-decor" style={style}>
-          <div className={`decor decor-label ${micro}`}>
-            <span>{item.text}</span>
-          </div>
+        <div key={item.id} className={`mograph-photo-decor${centered}`} style={style}>
+          <div className={`decor decor-label ${micro}`}><span>{item.text}</span></div>
         </div>
       );
     case "sticker":
       return (
-        <div key={item.id} className="mograph-decor" style={style}>
+        <div key={item.id} className={`mograph-photo-decor${centered}`} style={style}>
           <div className={`decor decor-sticker ${micro}`}>✦</div>
         </div>
       );
     case "clip":
       return (
-        <div key={item.id} className="mograph-decor" style={style}>
+        <div key={item.id} className={`mograph-photo-decor${centered}`} style={style}>
           <svg className="decor decor-clip" viewBox="0 0 24 40" aria-hidden="true">
             <path
               d="M6 10 V30 a6 6 0 0 0 12 0 V8 a4 4 0 0 0-8 0 V28"
@@ -181,23 +158,15 @@ function renderDecor(item) {
       );
     case "doodle-star":
       return (
-        <div key={item.id} className="mograph-decor" style={style}>
+        <div key={item.id} className={`mograph-photo-decor${centered}`} style={style}>
           <svg className="decor decor-doodle" viewBox="0 0 40 40" aria-hidden="true">
             <path pathLength="1" d="M20 4 L24 16 L36 16 L26 24 L30 36 L20 28 L10 36 L14 24 L4 16 L16 16 Z" />
           </svg>
         </div>
       );
-    case "doodle-heart":
-      return (
-        <div key={item.id} className="mograph-decor" style={style}>
-          <svg className="decor decor-doodle" viewBox="0 0 40 40" aria-hidden="true">
-            <path pathLength="1" d="M20 34 C6 24 4 14 12 9 C17 6 20 10 20 14 C20 10 23 6 28 9 C36 14 34 24 20 34 Z" />
-          </svg>
-        </div>
-      );
     case "doodle-arrow":
       return (
-        <div key={item.id} className="mograph-decor" style={style}>
+        <div key={item.id} className={`mograph-photo-decor${centered}`} style={style}>
           <svg className="decor decor-doodle" viewBox="0 0 40 40" aria-hidden="true">
             <path pathLength="1" d="M4 30 C14 26 24 18 34 10 M24 8 L34 10 L32 20" />
           </svg>
@@ -205,7 +174,7 @@ function renderDecor(item) {
       );
     case "doodle-scribble":
       return (
-        <div key={item.id} className="mograph-decor" style={style}>
+        <div key={item.id} className={`mograph-photo-decor${centered}`} style={style}>
           <svg className="decor decor-doodle" viewBox="0 0 40 40" aria-hidden="true">
             <path pathLength="1" d="M4 20 C10 10 14 30 20 20 C26 10 30 30 36 20" />
           </svg>
@@ -215,6 +184,20 @@ function renderDecor(item) {
       return null;
   }
 }
+
+// Groups a scene's decor list by photoIndex once, so Scene can just
+// look up `decorByPhoto[i]` while mapping photos — no filtering per frame.
+function groupDecorByPhoto(sceneKey) {
+  const list = SCENE_DECOR[sceneKey % SCENE_DECOR.length] || [];
+  const grouped = {};
+  for (const item of list) {
+    if (!grouped[item.photoIndex]) grouped[item.photoIndex] = [];
+    grouped[item.photoIndex].push(item);
+  }
+  return grouped;
+}
+
+
 
 // Resolve a scene's photo index list into actual photo sources.
 // Falls back gracefully (clamped/looped) if MOGRAPH_PHOTOS is ever
@@ -262,10 +245,7 @@ export default function Mograph({ active, entering, activeLyricIndex }) {
 
 function Scene({ sceneKey, layout, camera, string, photos, background, duration, text }) {
   const lines = useMemo(() => (text || "").split("\n").filter(Boolean), [text]);
-  const decor = SCENE_DECOR[sceneKey % SCENE_DECOR.length] || [];
-  const decorBg = decor.filter((d) => d.layer === "bg");
-  const decorDeco = decor.filter((d) => d.layer === "deco");
-  const decorFg = decor.filter((d) => d.layer === "fg");
+  const decorByPhoto = groupDecorByPhoto(sceneKey);
   const flashColor = SCENE_FLASH[sceneKey % SCENE_FLASH.length];
 
   return (
@@ -286,21 +266,21 @@ function Scene({ sceneKey, layout, camera, string, photos, background, duration,
       {/* CAMERA VIEWPORT — clips the world so it can pan/zoom freely */}
       <div className="mograph-scene__viewport">
         <div className={`mograph-scene__world mograph-cam--${camera}`}>
-          {decorBg.length > 0 && (
-            <div className="mograph-decor-layer mograph-decor-layer--bg" aria-hidden="true">
-              {decorBg.map(renderDecor)}
-            </div>
-          )}
-          {photos.map((src, i) => (
-            <div className={`mograph-photo-frame mograph-photo-frame--${i}`} key={src + i}>
-              <div
-                className="mograph-photo-frame__inner"
-                style={{ "--entrance-delay": `${i * 0.16}s` }}
-              >
-                <img src={src} alt="" loading="eager" />
+          {photos.map((src, i) => {
+            const entranceDelay = i * 0.16;
+            const decorItems = decorByPhoto[i] || [];
+            return (
+              <div className={`mograph-photo-frame mograph-photo-frame--${i}`} key={src + i}>
+                <div
+                  className="mograph-photo-frame__inner"
+                  style={{ "--entrance-delay": `${entranceDelay}s` }}
+                >
+                  <img src={src} alt="" loading="eager" />
+                </div>
+                {decorItems.map((item) => renderPhotoDecor(item, entranceDelay))}
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {string && (
             <svg
@@ -315,17 +295,6 @@ function Scene({ sceneKey, layout, camera, string, photos, background, duration,
                 pathLength="1"
               />
             </svg>
-          )}
-
-          {decorDeco.length > 0 && (
-            <div className="mograph-decor-layer mograph-decor-layer--deco" aria-hidden="true">
-              {decorDeco.map(renderDecor)}
-            </div>
-          )}
-          {decorFg.length > 0 && (
-            <div className="mograph-decor-layer mograph-decor-layer--fg" aria-hidden="true">
-              {decorFg.map(renderDecor)}
-            </div>
           )}
         </div>
 
