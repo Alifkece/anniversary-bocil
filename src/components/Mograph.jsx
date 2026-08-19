@@ -114,7 +114,11 @@ function Scene({ sceneKey, layout, camera, string, photos, background, duration,
               preserveAspectRatio="none"
               aria-hidden="true"
             >
-              <path className="mograph-string__path" d="M20,25 Q50,10 80,75" />
+              <path
+                className="mograph-string__path"
+                d="M20,25 Q50,10 80,75"
+                pathLength="1"
+              />
             </svg>
           )}
         </div>
